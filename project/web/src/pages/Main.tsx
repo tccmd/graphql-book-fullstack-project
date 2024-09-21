@@ -6,7 +6,7 @@ export default function Main(): React.ReactElement {
   return (
     <CommonLayout>
       <Box>
-        <Heading>최고의 장면을 찾아보세요</Heading>
+        <Heading size="lg">최고의 장면을 찾아보세요</Heading>
         <FilmList />
       </Box>
     </CommonLayout>

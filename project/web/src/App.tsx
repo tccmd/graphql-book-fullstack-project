@@ -10,9 +10,6 @@ export const App: React.FC = () => {
   return (
     <ApolloProvider client={apolloClient}>
       <ChakraProvider theme={theme}>
-        {/* <BrowserRouter>
-            <Route exact path="/" component={FilmList} />
-        </BrowserRouter> */}
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Main />} />
