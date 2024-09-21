@@ -47,29 +47,47 @@ export type Film = {
   title: Scalars['String']['output'];
 };
 
-export type Query = {
-  __typename?: 'Query';
+export type PaginatedFilms = {
+  __typename?: 'PaginatedFilms';
+  cursor?: Maybe<Scalars['Int']['output']>;
   films: Array<Film>;
 };
 
-export type FilmsQueryVariables = Exact<{ [key: string]: never; }>;
+export type Query = {
+  __typename?: 'Query';
+  films: PaginatedFilms;
+};
 
 
-export type FilmsQuery = { __typename?: 'Query', films: Array<{ __typename?: 'Film', id: number, title: string, subtitle?: string | null, runningTime: number, release: string, posterImg: string, director: { __typename?: 'Director', name: string } }> };
+export type QueryFilmsArgs = {
+  cursor?: InputMaybe<Scalars['Int']['input']>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+};
+
+export type FilmsQueryVariables = Exact<{
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  cursor?: InputMaybe<Scalars['Int']['input']>;
+}>;
+
+
+export type FilmsQuery = { __typename?: 'Query', films: { __typename?: 'PaginatedFilms', cursor?: number | null, films: Array<{ __typename?: 'Film', id: number, title: string, subtitle?: string | null, runningTime: number, release: string, posterImg: string, director: { __typename?: 'Director', name: string } }> } };
 
 
 export const FilmsDocument = gql`
-    query Films {
-  films {
-    id
-    title
-    subtitle
-    runningTime
-    director {
-      name
+    query Films($limit: Int, $cursor: Int) {
+  films(limit: $limit, cursor: $cursor) {
+    cursor
+    films {
+      id
+      title
+      subtitle
+      runningTime
+      director {
+        name
+      }
+      release
+      posterImg
     }
-    release
-    posterImg
   }
 }
     `;
@@ -86,6 +104,8 @@ export const FilmsDocument = gql`
  * @example
  * const { data, loading, error } = useFilmsQuery({
  *   variables: {
+ *      limit: // value for 'limit'
+ *      cursor: // value for 'cursor'
  *   },
  * });
  */

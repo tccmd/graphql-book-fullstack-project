@@ -1,4 +1,3 @@
-import { ApolloClient, ApolloProvider, InMemoryCache } from "@apollo/client"
 import {
   ChakraProvider,
   Box,
@@ -7,11 +6,10 @@ import {
 } from "@chakra-ui/react"
 import * as React from "react"
 import FilmList from "./components/film/FilmList"
+import { createApolloClient } from "./apollo/createApolloClient"
+import { ApolloProvider } from "@apollo/client"
 
-const apolloClient = new ApolloClient({
-  uri: 'http://localhost:4000/graphql',
-  cache: new InMemoryCache(),
-})
+const apolloClient = createApolloClient()
 
 export const App = () => (
   <ApolloProvider client={apolloClient}>
