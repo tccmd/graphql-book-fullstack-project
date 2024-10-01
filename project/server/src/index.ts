@@ -1,5 +1,3 @@
-// project/server/src/index.ts
-
 import 'reflect-metadata'
 import express from 'express'
 import { ApolloServer, gql } from 'apollo-server-express'
@@ -7,13 +5,14 @@ import { ApolloServerPluginLandingPageLocalDefault } from 'apollo-server-core'
 import http from 'http'
 import { buildSchema } from 'type-graphql'
 import { FilmResolver } from './resolvers/Film'
+import { CutResolver } from './resolvers/Cut'
 
 async function main() {
     const app = express()
 
     const apolloServer = new ApolloServer({
         schema: await buildSchema({
-            resolvers: [FilmResolver],
+            resolvers: [FilmResolver, CutResolver],
         }),
         plugins: [ApolloServerPluginLandingPageLocalDefault()],
     })
