@@ -58,6 +58,16 @@ export type Film = {
   title: Scalars['String']['output'];
 };
 
+export type Mutation = {
+  __typename?: 'Mutation';
+  signUp: User;
+};
+
+
+export type MutationSignUpArgs = {
+  signUpInput: SignUpInput;
+};
+
 export type PaginatedFilms = {
   __typename?: 'PaginatedFilms';
   cursor?: Maybe<Scalars['Int']['output']>;
@@ -91,6 +101,25 @@ export type QueryFilmArgs = {
 export type QueryFilmsArgs = {
   cursor?: InputMaybe<Scalars['Int']['input']>;
   limit?: InputMaybe<Scalars['Int']['input']>;
+};
+
+export type SignUpInput = {
+  email: Scalars['String']['input'];
+  password: Scalars['String']['input'];
+  username: Scalars['String']['input'];
+};
+
+export type User = {
+  __typename?: 'User';
+  /** 생성 일자 */
+  createdAt: Scalars['String']['output'];
+  /** 유저 이메일  */
+  email: Scalars['String']['output'];
+  id: Scalars['Int']['output'];
+  /** 업데이트 일자 */
+  updateAt: Scalars['String']['output'];
+  /** 유저 이름 */
+  username: Scalars['String']['output'];
 };
 
 export type CutQueryVariables = Exact<{
