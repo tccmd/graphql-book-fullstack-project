@@ -25,5 +25,5 @@ export default class User extends BaseEntity {
 
   @Field(() => String, { description: '업데이트 일자' })
   @UpdateDateColumn({ comment: '업데이트 일자' }) // typeorm
-  updateAt!: Date
+  updatedAt!: Date
 }

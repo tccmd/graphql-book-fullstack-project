@@ -49,7 +49,7 @@ function SignUpRealForm() {
   return (
     // onSubmit 핸들러로 useForm의 반환값 중 하나은 handleSubmit을 사용
     // 제네릭으로 useForm의 타입을 지정했기 때문에 handleSubmit 함수의 첫번째 인자인 data는 타입이 지정되어있다.
-    <Stack as="form" spacing={4} onSubmit={handleSubmit((data) => console.log(data))}>
+    <Stack as="form" spacing={4} onSubmit={handleSubmit(onSubmit)}>
       {/* isInvaild 속성으로 해당 필드가 유효한지, 유효하지 않은지 구분 */}
       {/* useForm 훅에서 제공된 값인 formState의 errors 값을 통해 구분된다. */}
       {/* 필드의 존재 여부를 !! 연산자를 이용해 boolean값으로 받는다*/}

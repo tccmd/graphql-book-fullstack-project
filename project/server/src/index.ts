@@ -22,6 +22,10 @@ async function main() {
     await apolloServer.start()
     apolloServer.applyMiddleware({ app })
 
+    app.get('/', (req, res) => {
+      res.status(200).send() // for health check
+    })
+
     const httpServer = http.createServer(app)
 
     httpServer.listen(process.env.PORT || 4000, () => {
