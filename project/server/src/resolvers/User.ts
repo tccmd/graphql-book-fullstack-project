@@ -4,6 +4,8 @@ import { Arg, Field, InputType, Mutation, ObjectType, Resolver } from 'type-grap
 import User from '../entities/User';
 // 비밀번호 해시화를 위한 argon2 라이브러리 전체를 불러옴
 import * as argon2 from 'argon2';
+import jwt from 'jsonwebtoken';
+import { createAccessToken } from '../utils/jwt-auth';
 
 // GraphQL에서 입력으로 받을 데이터 구조를 정의하는 클래스
 // 이 클래스는 GraphQL의 InputType으로 사용되며, 회원가입 요청 시 필요한 데이터를 정의함
@@ -79,6 +81,7 @@ export class UserResolver {
 
   @Mutation(() => LoginResponse)
   public async login(@Arg('loginInput') loginInput: LoginInput): Promise<LoginResponse> {
+    // 유저 확인 로직
     // 입력받은 loginInput 데이터로부터 emailOrusername과 password를 가져온다.
     const { emailOrUsername, password } = loginInput;
 
@@ -99,6 +102,10 @@ export class UserResolver {
         errors: [{ field: 'password', message: '비밀번호를 올바르게 입력해주세요.' }],
       };
     // 올바른 비밀번호인 경우 로그인이 완료되었으므로 user 정보를 반환
-    return { user };
+
+    // 엑세스 토큰 발급
+    const accessToken = createAccessToken(user);
+
+    return { user, accessToken };
   }
 }
