@@ -99,7 +99,7 @@ function SignUpRealForm() {
       </FormControl>
 
       <Divider />
-      <Button color="teal" type="submit" isLoading={loading}>
+      <Button colorScheme="teal" type="submit" isLoading={loading}>
         계정 생성
       </Button>
     </Stack>
