@@ -1,11 +1,12 @@
 // 이메일 유효성 검사를 위한 데코레이터와 문자열 유효성 검사를 위한 데코레이터를 class-validator에서 가져옴
 import { IsEmail, IsString } from 'class-validator';
-import { Arg, Field, InputType, Mutation, ObjectType, Resolver } from 'type-graphql';
+import { Arg, Ctx, Field, InputType, Mutation, ObjectType, Query, Resolver, UseMiddleware } from 'type-graphql';
 import User from '../entities/User';
 // 비밀번호 해시화를 위한 argon2 라이브러리 전체를 불러옴
 import * as argon2 from 'argon2';
-import jwt from 'jsonwebtoken';
 import { createAccessToken } from '../utils/jwt-auth';
+import { MyContext } from '../apollo/createApolloServer';
+import { isAuthenticated } from '../middleweres/isAuthenticated';
 
 // GraphQL에서 입력으로 받을 데이터 구조를 정의하는 클래스
 // 이 클래스는 GraphQL의 InputType으로 사용되며, 회원가입 요청 시 필요한 데이터를 정의함
@@ -54,6 +55,18 @@ class LoginResponse {
 
 @Resolver(User)
 export class UserResolver {
+  // me 쿼리가 실행되기 전에 언제나 미들웨어 함수를 거치게 된다.
+  // 이제 로그인이 필요한 쿼리나 뮤테이션에 @UseMiddleware(isAuthenticated) 데코레이터를 추가하면 로그인 여부를 자동으로 체크하게 된다.
+  @UseMiddleware(isAuthenticated)
+  @Query(() => User, { nullable: true })
+  // @Ctx: context 데코레이터
+  async me(@Ctx() ctx: MyContext): Promise<User | undefined> {
+    if (!ctx.verifiedUser) return undefined;
+    // return User.findOne({ where: { id: ctx.verifiedUser.userId } });
+    const user = await User.findOne({ where: { id: ctx.verifiedUser.userId } });
+    return user || undefined;
+  }
+
   // 이 함수는 User 타입의 데이터를 반환함
   @Mutation(() => User)
   // UserResolver 클래스의 signUp 메서드, 위 데코레이터로 "User 타입을 반환하는 뮤테이션"으로 구현되었다.
