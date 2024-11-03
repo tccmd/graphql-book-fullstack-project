@@ -6,11 +6,13 @@ import { CutResolver } from '../resolvers/Cut';
 import { UserResolver } from '../resolvers/User';
 import { Request, Response } from 'express';
 import { JwtVerifiedUser, verifyAccessTokenFromReqHeaders } from '../utils/jwt-auth';
+import redis from '../redis/redis-client';
 
 export interface MyContext {
   req: Request;
   res: Response;
   verifiedUser: JwtVerifiedUser;
+  redis: typeof redis;
 }
 
 const createApolloServer = async (): Promise<ApolloServer> => {
@@ -23,7 +25,7 @@ const createApolloServer = async (): Promise<ApolloServer> => {
     context: ({ req, res }) => {
       // 액세스 토큰 검증
       const verified = verifyAccessTokenFromReqHeaders(req.headers);
-      return { req, res, verifiedUser: verified };
+      return { req, res, verifiedUser: verified, redis };
     },
   });
 };

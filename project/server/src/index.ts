@@ -3,13 +3,22 @@ import express from 'express';
 import http from 'http';
 import { createDB } from './db/db-client';
 import createApolloServer from './apollo/createApolloServer';
+import cookieParser from 'cookie-parser';
 
 async function main() {
   const app = express();
+  app.use(cookieParser());
 
   const apolloServer = await createApolloServer();
   await apolloServer.start();
-  apolloServer.applyMiddleware({ app });
+  apolloServer.applyMiddleware({
+    app,
+    cors: {
+      // 아폴로 스튜디오를 GraphQL 테스트 용도로 활용하기 위해 https://studio.apollographql.com도 허용하도록 구성
+      origin: ['http://localhost:3000', 'https://studio.apollographql.com'],
+      credentials: true,
+    },
+  });
 
   app.get('/', (req, res) => {
     res.status(200).send(); // for health check
