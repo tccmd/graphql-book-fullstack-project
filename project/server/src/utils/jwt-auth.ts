@@ -30,7 +30,7 @@ export const verifyAccessToken = (accessToken?: string): JwtVerifiedUser | null 
     const verified = jwt.verify(accessToken, process.env.JWT_SECRET_KEY || DEFAUT_JWT_SECRET_KEY) as JwtVerifiedUser;
     return verified;
   } catch (err) {
-    console.error('access_token expired: ', err);
+    // console.error('access_token expired: ', err);
     // 토큰이 만료되었거나, 알 수 없는 토큰일 경우 에러를 일으킨다.
     throw new AuthenticationError('access token expired');
   }
@@ -40,7 +40,7 @@ export const verifyAccessToken = (accessToken?: string): JwtVerifiedUser | null 
 export const verifyAccessTokenFromReqHeaders = (headers: IncomingHttpHeaders): JwtVerifiedUser | null => {
   // 요청 객체의 headers 필드에 Authorization 헤더가
   const { authorization } = headers;
-  console.log('요청 객체의 headers에 Authorization 헤더 존재');
+  // console.log('요청 객체의 headers에 Authorization 헤더 존재');
   // 없다면 null 반환
   if (!authorization) return null;
 
