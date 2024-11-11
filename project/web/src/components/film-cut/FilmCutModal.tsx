@@ -60,6 +60,7 @@ function FilmCutModal({ open, onClose, cutId }: FilmCutModalProps): React.ReactE
               cutId={data.cut.id}
               votesCount={data.cut.votesCount}
               isVoted={data.cut.isVoted}
+              reviews={data.cutReviews}
             />
           )}
         </ModalBody>

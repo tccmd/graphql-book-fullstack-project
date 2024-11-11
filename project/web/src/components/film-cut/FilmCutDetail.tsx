@@ -2,26 +2,39 @@ import {
   AspectRatio,
   Box,
   Button,
+  Center,
   Flex,
   Heading,
   HStack,
   Image,
+  SimpleGrid,
   Text,
   useColorModeValue,
+  useDisclosure,
   useToast,
 } from '@chakra-ui/react';
 import { FaHeart } from 'react-icons/fa';
 import { CutDocument, CutQuery, CutQueryVariables, useMeQuery, useVoteMutation } from '../../generated/graphql';
 import { useMemo } from 'react';
+import { FilmCutReviewRegiModal } from './FilmCutReviewRegiModal';
+import { FilmCutReview } from './FilmCutReview';
+import FilmCutDetailDeleteAlert from './FilmCutReviewDelete';
 
-interface FilmCutDetailProps {
+interface MovieCutDetailProps {
   cutImg: string;
   cutId: number;
   isVoted?: boolean;
   votesCount?: number;
+  reviews: CutQuery['cutReviews'];
 }
 
-export function FilmCutDetail({ cutImg, cutId, isVoted = false, votesCount = 0 }: FilmCutDetailProps): JSX.Element {
+export function FilmCutDetail({
+  cutImg,
+  cutId,
+  isVoted = false,
+  votesCount = 0,
+  reviews,
+}: MovieCutDetailProps): JSX.Element {
   const toast = useToast();
   const voteButtonColor = useColorModeValue('gray.500', 'gray.400');
   const [vote, { loading: voteLoading }] = useVoteMutation({
@@ -69,6 +82,9 @@ export function FilmCutDetail({ cutImg, cutId, isVoted = false, votesCount = 0 }
     if (accessToken) return userData?.me?.id;
     return false;
   }, [accessToken, userData?.me?.id]);
+
+  const reviewRegiDialog = useDisclosure();
+  const deleteAlert = useDisclosure();
   return (
     <Box>
       <AspectRatio ratio={16 / 9}>
@@ -104,10 +120,40 @@ export function FilmCutDetail({ cutImg, cutId, isVoted = false, votesCount = 0 }
               <Text>{votesCount}</Text>
             </Button>
             {/* '감상 남기기' 버튼, 청록색(teal) 색상으로 스타일링 */}
-            <Button colorScheme="teal">감상 남기기</Button>
+            <Button colorScheme="teal" onClick={reviewRegiDialog.onOpen}>
+              감상 남기기
+            </Button>
           </HStack>
         </Flex>
       </Box>
+
+      {/* 감상 목록 */}
+      <Box mt={6}>
+        {!reviews || reviews.length === 0 ? (
+          <Center minH={100}>
+            <Text>제일 먼저 감상을 남겨보세요!</Text>
+          </Center>
+        ) : (
+          <SimpleGrid mt={3} spacing={4} columns={{ base: 1, sm: 2 }}>
+            {reviews.slice(0, 2).map((review) => (
+              <FilmCutReview
+                key={review.id}
+                author={review.user.username}
+                contents={review.contents}
+                isMine={review.isMine}
+                onEditClick={reviewRegiDialog.onOpen}
+                onDeleteClick={deleteAlert.onOpen}
+              />
+            ))}
+          </SimpleGrid>
+        )}
+      </Box>
+      <FilmCutReviewRegiModal cutId={cutId} isOpen={reviewRegiDialog.isOpen} onClose={reviewRegiDialog.onClose} />
+      <FilmCutDetailDeleteAlert
+        target={reviews.find((review) => review.isMine)}
+        isOpen={deleteAlert.isOpen}
+        onClose={deleteAlert.onClose}
+      />
     </Box>
   );
 }

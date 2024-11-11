@@ -8,6 +8,7 @@ import { Request, Response } from 'express';
 import { JwtVerifiedUser, verifyAccessTokenFromReqHeaders } from '../utils/jwt-auth';
 import redis from '../redis/redis-client';
 import { createCutVoteLoader } from '../dataloader/cutVoteLoader';
+import { CutReviewResolver } from '../resolvers/CutReview';
 
 export interface MyContext {
   req: Request;
@@ -21,7 +22,7 @@ export interface MyContext {
 const createApolloServer = async (): Promise<ApolloServer> => {
   return new ApolloServer<MyContext>({
     schema: await buildSchema({
-      resolvers: [FilmResolver, CutResolver, UserResolver],
+      resolvers: [FilmResolver, CutResolver, UserResolver, CutReviewResolver],
     }),
     plugins: [ApolloServerPluginLandingPageLocalDefault()],
     // context 객체에 verifiedUser라는 필드로 액세스 토큰을 통한 유저 검증 정보를 넘기도록 구성

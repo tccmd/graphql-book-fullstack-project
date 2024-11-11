@@ -5,5 +5,10 @@ query me {
     email
     updatedAt
     createdAt
+    userCutReviews {
+      cutId
+      contents
+      createdAt
+    }
   }
 }

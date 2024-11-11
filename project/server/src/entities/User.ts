@@ -9,6 +9,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { CutVote } from './CutVote';
+import { CutReview } from './CutReview';
 
 @ObjectType() // type-graphql
 @Entity() // typeorm
@@ -38,4 +39,11 @@ export default class User extends BaseEntity {
 
   @OneToMany(() => CutVote, (cutVote) => cutVote.user)
   cutVotes?: CutVote[];
+
+  @OneToMany(() => CutReview, (cutReview) => cutReview.user)
+  cutReviews?: CutReview[];
+
+  @Field(() => [CutReview], { nullable: true })
+  @OneToMany(() => CutReview, (cutReview) => cutReview.user)
+  userCutReviews?: CutReview[];
 }

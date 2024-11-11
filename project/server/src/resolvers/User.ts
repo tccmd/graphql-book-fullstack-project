@@ -1,6 +1,18 @@
 // 이메일 유효성 검사를 위한 데코레이터와 문자열 유효성 검사를 위한 데코레이터를 class-validator에서 가져옴
 import { IsEmail, IsString } from 'class-validator';
-import { Arg, Ctx, Field, InputType, Mutation, ObjectType, Query, Resolver, UseMiddleware } from 'type-graphql';
+import {
+  Arg,
+  Args,
+  Ctx,
+  Field,
+  FieldResolver,
+  InputType,
+  Mutation,
+  ObjectType,
+  Query,
+  Resolver,
+  UseMiddleware,
+} from 'type-graphql';
 import User from '../entities/User';
 // 비밀번호 해시화를 위한 argon2 라이브러리 전체를 불러옴
 import * as argon2 from 'argon2';
@@ -13,6 +25,9 @@ import {
 import { MyContext } from '../apollo/createApolloServer';
 import { isAuthenticated } from '../middleweres/isAuthenticated';
 import jwt from 'jsonwebtoken';
+import { CutReview } from '../entities/CutReview';
+import { PaginationArgs } from './CutReview';
+import { format } from 'date-fns';
 
 // GraphQL에서 입력으로 받을 데이터 구조를 정의하는 클래스
 // 이 클래스는 GraphQL의 InputType으로 사용되며, 회원가입 요청 시 필요한 데이터를 정의함
@@ -200,5 +215,31 @@ export class UserResolver {
 
     // 새롭게 발급한 액세스 토큰 반환
     return { accessToken: newAccessToken };
+  }
+
+  // 필드 리졸버 userCutReviews
+  @FieldResolver(() => [CutReview])
+  async userCutReviews(
+    @Args() { take, skip }: PaginationArgs,
+    @Ctx() { verifiedUser }: MyContext,
+  ): Promise<CutReview[]> {
+    let reviews;
+    if (verifiedUser && verifiedUser.userId) {
+      reviews = await CutReview.find({
+        where: { user: { id: verifiedUser.userId } },
+        skip,
+        take: take,
+        order: { createdAt: 'DESC' },
+      });
+
+      console.log(
+        reviews.map((review) => {
+          return format(new Date(review.createdAt!), 'yy. MM. dd'); // 날짜 포맷
+        }),
+      );
+
+      return reviews;
+    }
+    return [];
   }
 }
