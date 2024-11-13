@@ -28,6 +28,10 @@ import jwt from 'jsonwebtoken';
 import { CutReview } from '../entities/CutReview';
 import { PaginationArgs } from './CutReview';
 import { format } from 'date-fns';
+// 파일을 저장할 때 필요
+import { createWriteStream } from 'fs';
+// GraphQL 파일 업로드를 위해 필요한 타입과 스칼라(GraphQLUpload)
+import { FileUpload, GraphQLUpload } from 'graphql-upload';
 
 // GraphQL에서 입력으로 받을 데이터 구조를 정의하는 클래스
 // 이 클래스는 GraphQL의 InputType으로 사용되며, 회원가입 요청 시 필요한 데이터를 정의함
@@ -217,6 +221,18 @@ export class UserResolver {
     return { accessToken: newAccessToken };
   }
 
+  @Mutation(() => Boolean)
+  @UseMiddleware(isAuthenticated)
+  async logout(
+    @Ctx() { verifiedUser, res, redis }: MyContext,
+  ):Promise<boolean> {
+    if (verifiedUser) {
+      setRefreshTokenHeader(res, ''); // 리프레시 토큰 쿠키 제거
+      await redis.del(String(verifiedUser.userId)); // 레디스 리프레시 토큰 제거
+    }
+    return true;
+  }
+
   // 필드 리졸버 userCutReviews
   @FieldResolver(() => [CutReview])
   async userCutReviews(
@@ -241,5 +257,32 @@ export class UserResolver {
       return reviews;
     }
     return [];
+  }
+
+  @UseMiddleware(isAuthenticated)
+  @Mutation(() => Boolean)
+  async uploadProfileImage(
+    @Ctx() { verifiedUser }: MyContext,
+    // 업로드할 파일의 정보를 GraphQLUpload 스칼라로 가져온다
+    @Arg('file', () => GraphQLUpload) { createReadStream, filename }: FileUpload,
+  ): Promise<boolean> {
+    // 파일 이름에 사용자 ID로 지정하여 고유하게 만듬
+    const realFileName = verifiedUser.userId + filename;
+    // 파일이 저장될 경로
+    const filePath = `public/${realFileName}`;
+
+    return new Promise((resolve, reject) =>
+      // 파일 스트림을 읽어온 후 저장 경로로 연결하여 파일을 쓴다.
+      createReadStream()
+        .pipe(createWriteStream(filePath))
+        .on('finish', async () => {
+          // 파일 저장이 완료되면 데이터베이스에서 사용자 프로필 이미지 정보 업데이트
+          await User.update({ id: verifiedUser.userId }, { profileImage: realFileName });
+          // 모든 작업이 성공적으로 완료되면 true 반환 // 뜻: 해결
+          return resolve(true);
+        })
+        // 에러가 발생하면 promise를 reject하여 오류 반환 // 뜻: 거부
+        .on('error', () => reject(Error('file upload failed'))),
+    );
   }
 }

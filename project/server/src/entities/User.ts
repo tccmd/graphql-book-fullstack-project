@@ -46,4 +46,8 @@ export default class User extends BaseEntity {
   @Field(() => [CutReview], { nullable: true })
   @OneToMany(() => CutReview, (cutReview) => cutReview.user)
   userCutReviews?: CutReview[];
+
+  @Column({ comment: '프로필 사진 경로', nullable: true })
+  @Field({ description: '프로필 사진 경로', nullable: true})
+  profileImage?: string;
 }

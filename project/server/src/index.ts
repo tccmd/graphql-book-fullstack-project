@@ -4,10 +4,14 @@ import http from 'http';
 import { createDB } from './db/db-client';
 import createApolloServer from './apollo/createApolloServer';
 import cookieParser from 'cookie-parser';
+import { graphqlUploadExpress } from 'graphql-upload';
 
 async function main() {
+  await createDB();
   const app = express();
+  app.use(express.static('public'));
   app.use(cookieParser());
+  app.use(graphqlUploadExpress({ maxFieldSize: 1024 * 1000 * 5, maxFiles: 1 }));
 
   const apolloServer = await createApolloServer();
   await apolloServer.start();
@@ -38,8 +42,6 @@ async function main() {
             `);
     }
   });
-
-  await createDB();
 }
 
 main().catch((err) => console.error(err));
