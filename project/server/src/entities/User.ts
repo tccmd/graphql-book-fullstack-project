@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import { CutVote } from './CutVote';
 import { CutReview } from './CutReview';
+import Notification from './Notification';
 
 @ObjectType() // type-graphql
 @Entity() // typeorm
@@ -31,11 +32,11 @@ export default class User extends BaseEntity {
 
   @Field(() => String, { description: '생성 일자' })
   @CreateDateColumn({ comment: '생성 일자' }) // typeorm
-  createdAt!: Date;
+  createdAt?: Date;
 
   @Field(() => String, { description: '업데이트 일자' })
   @UpdateDateColumn({ comment: '업데이트 일자' }) // typeorm
-  updatedAt!: Date;
+  updatedAt?: Date;
 
   @OneToMany(() => CutVote, (cutVote) => cutVote.user)
   cutVotes?: CutVote[];
@@ -48,6 +49,9 @@ export default class User extends BaseEntity {
   userCutReviews?: CutReview[];
 
   @Column({ comment: '프로필 사진 경로', nullable: true })
-  @Field({ description: '프로필 사진 경로', nullable: true})
+  @Field({ description: '프로필 사진 경로', nullable: true })
   profileImage?: string;
+
+  @OneToMany(() => Notification, (noti) => noti.user)
+  notification?: Notification[];
 }

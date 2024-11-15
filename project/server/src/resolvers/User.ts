@@ -223,9 +223,7 @@ export class UserResolver {
 
   @Mutation(() => Boolean)
   @UseMiddleware(isAuthenticated)
-  async logout(
-    @Ctx() { verifiedUser, res, redis }: MyContext,
-  ):Promise<boolean> {
+  async logout(@Ctx() { verifiedUser, res, redis }: MyContext): Promise<boolean> {
     if (verifiedUser) {
       setRefreshTokenHeader(res, ''); // 리프레시 토큰 쿠키 제거
       await redis.del(String(verifiedUser.userId)); // 레디스 리프레시 토큰 제거

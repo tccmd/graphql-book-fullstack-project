@@ -5,6 +5,8 @@ import { createDB } from './db/db-client';
 import createApolloServer from './apollo/createApolloServer';
 import cookieParser from 'cookie-parser';
 import { graphqlUploadExpress } from 'graphql-upload';
+import { createSchema } from './apollo/createSchema';
+import { createSubscriptionServer } from './apollo/createSubscriptionServer';
 
 async function main() {
   await createDB();
@@ -12,8 +14,11 @@ async function main() {
   app.use(express.static('public'));
   app.use(cookieParser());
   app.use(graphqlUploadExpress({ maxFieldSize: 1024 * 1000 * 5, maxFiles: 1 }));
+  const httpServer = http.createServer(app);
 
-  const apolloServer = await createApolloServer();
+  const schema = await createSchema();
+  await createSubscriptionServer(schema, httpServer);
+  const apolloServer = await createApolloServer(schema);
   await apolloServer.start();
   apolloServer.applyMiddleware({
     app,
@@ -27,8 +32,6 @@ async function main() {
   app.get('/', (req, res) => {
     res.status(200).send(); // for health check
   });
-
-  const httpServer = http.createServer(app);
 
   httpServer.listen(process.env.PORT || 4000, () => {
     if (process.env.NODE_ENV !== 'production') {
