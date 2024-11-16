@@ -17,7 +17,7 @@ export default function UserCutReviewList(): JSX.Element {
   // SimpleGrid는 그리드 레이아웃을 생성, 열 수를 반응형으로 설정 (기본 2열, 큰 화면에서는 3열)
   return (
     <SimpleGrid columns={[1, null, 3]} spacing={[2, null, 5]}>
-      {data?.me?.userCutReviews && data.me.userCutReviews.length > 0 ? (
+      {/* {data?.me?.userCutReviews && data.me.userCutReviews.length > 0 ? (
         // 데이터가 있는 경우, 리뷰 카드를 렌더링
         data.me.userCutReviews.map((userCutReview, i) => <UserCutReviewCard key={i} userCutReview={userCutReview} />)
       ) : (
@@ -25,7 +25,7 @@ export default function UserCutReviewList(): JSX.Element {
         <Box textAlign="center" color="gray.500" fontSize="lg" p={4}>
           No reviews found.
         </Box>
-      )}{' '}
+      )}{' '} */}
     </SimpleGrid>
   );
 }

@@ -1,9 +1,11 @@
-import { ApolloClient, from, fromPromise, NormalizedCacheObject } from '@apollo/client';
+import { ApolloClient, from, fromPromise, NormalizedCacheObject, split } from '@apollo/client';
 import { createApolloCache } from './createApolloCache';
 import { onError } from '@apollo/client/link/error';
 import { setContext } from '@apollo/client/link/context';
 import { refreshAccessToken } from './auth';
 import createUploadLink from 'apollo-upload-client/createUploadLink.mjs';
+import { WebSocketLink } from '@apollo/client/link/ws';
+import { getMainDefinition } from '@apollo/client/utilities';
 let apolloClient: ApolloClient<NormalizedCacheObject>;
 
 export const initializeApolloClient = () => {
@@ -72,6 +74,37 @@ const authLink = setContext((req, prevContext) => {
   };
 });
 
+// WebSocket 링크
+const wsLink = new WebSocketLink({
+  uri: 'ws://localhost:4000/graphql',
+  options: {
+    // reconnect 필드로 웹소켓 커넥션이 끊길 경우를 대비해 재연결하도록 구성
+    reconnect: true,
+    // 액세스 토큰을 갓으로 하는 Authorization 필드를 가진 객체를 반환하는 connectionParams 함수를 구성
+    // 이 반환 객체는 서버로 전달되어, 현재 연결된 커넥션에 대한 문맥 정보를 확인할 수 있도록 한다.
+    connectionParams: () => {
+      const accessToken = localStorage.getItem('access_token');
+      return {
+        Authorization: accessToken ? `Bearer ${accessToken}` : '',
+      };
+    },
+  },
+});
+
+// split 링크
+// Subscription 요청만 wsLink를 통해 Subscription 서버로 요청하고, 쿼리와 뮤테이션은 기본 서버로 요청하려는 경우,
+// @apollo/client 패키지에서 spilt 유틸 함수를 가져와 쿼리 정보를 바탕으로 operation이 "subscription"인 경우에만 wsLink에서 처리하도록 구성
+// spilt의 첫 번째 인자는 boolean을 반환하는 함수, true일 경우 두 번째 인자로 입력한 링크가, false인 경우 세 번째 인자로 입력한 링크가 적용된다.
+const splitLink = split(
+  ({ query }) => {
+    const definition = getMainDefinition(query);
+    return definition.kind === 'OperationDefinition' && definition.operation === 'subscription';
+  },
+  from([wsLink]),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  from([authLink, errorLink, httpUploadLink as any]),
+);
+
 export const createApolloClient = (): ApolloClient<NormalizedCacheObject> =>
   new ApolloClient({
     // uri 옵션을 입력하는 경우 HttpLink를 자동적으로 처리
@@ -80,6 +113,7 @@ export const createApolloClient = (): ApolloClient<NormalizedCacheObject> =>
     uri: 'http://localhost:4000/graphql', // httpLink에 의해 무시됨
     // @apollo/client의 from 함수로 errorLink와 httpLink를 엮어 작성
     // uploadLink는 httpLink와 동일하게 링크 체인을 끝내는 링크. 링크 배열의 마지막에 위치해야 한다.
-    link: from([authLink, errorLink, httpUploadLink as any]),
+    // split 함수의 반환값을 ApolloClient()의 link 필드로 적용하여 WebSocket을 통해 Subscription 요청이 이루어질 수 있도록 구성
+    link: splitLink,
     // 기본적인 링크 설정 완료
   });
